@@ -1,16 +1,14 @@
 {
-  "name": "linea-faucet-tokens",
+  "name": "tac-faucet-contracts",
   "version": "1.0.0",
   "description": "ERC20 tokens that can be publicly minted wrapping some ETH according to a specific rate",
   "scripts": {
     "compile": "./scripts/hh-wrapper compile",
-    "coverage": "COVERAGE=1 hardhat coverage",
-    "deploy": "./scripts/hh-wrapper deploy",
-    "verify": "./scripts/hh-wrapper verify "
+    "coverage": "COVERAGE=1 hardhat coverage
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@nomicfoundation/hardhat-verify": "^1.0.0",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
