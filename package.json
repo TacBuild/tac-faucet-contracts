@@ -1,0 +1,39 @@
+{
+  "name": "tac-faucet-contracts",
+  "version": "1.0.0",
+  "description": "ERC20 tokens that can be publicly minted wrapping some ETH according to a specific rate",
+  "scripts": {
+    "compile": "./scripts/hh-wrapper compile",
+    "coverage": "COVERAGE=1 hardhat coverage"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-verify": "^1.0.0",
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/hardhat-upgrades": "^1.23.1",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.4.2",
+    "hardhat": "^2.6.6",
+    "solhint": "^3.3.7",
+    "ts-generator": "^0.1.1",
+    "ts-node": "^10.1.0",
+    "typechain": "^8.1.0"
+  },
+  "dependencies": {
+    "@nomiclabs/hardhat-etherscan": "^3.1.5",
+    "@openzeppelin/contracts": "^4.8.2",
+    "@openzeppelin/contracts-upgradeable": "^4.8.3",
+    "ethereumjs-util": "^7.1.0",
+    "ethereumjs-wallet": "^1.0.1",
+    "hardhat-deploy": "^0.9.3",
+    "hardhat-deploy-ethers": "^0.3.0-beta.11",
+    "solidity-coverage": "^0.7.18",
+    "source-map-support": "^0.5.19",
+    "table": "^6.8.0",
+    "tac-l2-ccl": "^0.8.19",
+    "typescript": "^4.3.5"
+  }
+}
