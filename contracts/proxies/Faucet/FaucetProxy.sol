@@ -75,20 +75,27 @@ contract FaucetProxy is AppProxy {
 
         // proxy call
         ITreasurySwap(_appAddress).burn(amount);
+
+        //prepare tx back to TON
         uint256 tokenValue = ITreasurySwap(_appAddress).tokenValue();
         uint256 refundAmount = amount * 10 ** 9 / tokenValue;
 
-        // CCL L2->L1 callback
+        TransferHelper.safeApprove(wTON, getCrossChainLayerAddress(), refundAmount);
+
+        TokenAmount[] memory tokensToBurn = new TokenAmount[](1);
+        tokensToBurn[0] = TokenAmount(wTON, refundAmount);
+
+        //execute the tx back to TON
         OutMessage memory message = OutMessage({
-            queryId: 0,
-            timestamp: block.timestamp,
-            target: "",
-            methodName: "",
-            arguments: new bytes(0),
-            caller: address(this),
-            burn: new TokenAmount[](0),
-            lock: new TokenAmount[](0)
-        });
-        sendMessage(message, refundAmount);
+                    queryId: 0,
+                    timestamp: block.timestamp,
+                    target: "",
+                    methodName: "",
+                    arguments: new bytes(0),
+                    caller: address(this),
+                    burn: tokensToBurn,
+                    lock: new TokenAmount[](0)
+                });
+        sendMessage(message, 0);
     }
 }
