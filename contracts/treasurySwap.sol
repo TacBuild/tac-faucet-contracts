@@ -30,7 +30,7 @@ contract TreasurySwap is Ownable {
         return _decimals;
     }
 
-    function mint(address to, uint256 wTONamt) public {
+    function mint(address to, uint256 wTONamt) public returns (uint256) {
         require(wTONamt > 0, "TreasurySwap: You need to send some wTON");
 
         uint256 amount = (wTONamt * tokenValue) / (10 ** 9);
@@ -47,9 +47,11 @@ contract TreasurySwap is Ownable {
         require(amount <= faucetBalance, "TreasurySwap: Not enough tokens in the treasury");
 
         IERC20(token).transfer(to, amount);
+
+        return amount;
     }
 
-    function burn(uint256 amount) public {
+    function burn(uint256 amount) public returns (uint256) {
         require(amount > 0, "TreasurySwap: You need to sell at least some tokens");
         require(amount < upperBound, "TreasurySwap: You are requesting to sell too much tokens");
 
@@ -64,6 +66,8 @@ contract TreasurySwap is Ownable {
         uint256 refundAmount = amount * 10 ** 9 / tokenValue;
 
         IERC20(wTON).transfer(msg.sender, refundAmount);
+
+        return refundAmount;
     }
 
     function adminWithdraw(uint256 amount) public onlyOwner {

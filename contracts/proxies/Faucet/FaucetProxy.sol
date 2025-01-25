@@ -3,13 +3,20 @@ pragma solidity ^0.8.25;
 
 //Standard Proxy Imports:
 import { AppProxy } from "contracts/L2/AppProxy.sol";
-import { OutMessage, TokenAmount } from "tac-l2-ccl/contracts/L2/Structs.sol";
-import { ICrossChainLayer } from "tac-l2-ccl/contracts/interfaces/ICrossChainLayer.sol";
+import { OutMessage, TokenAmount, TacHeaderV1 } from "tac-l2-ccl/contracts/L2/Structs.sol";
 
 //Faucet Proxy Imports:
-import { IERC20 } from 'contracts/proxies/Faucet/IERC20.sol';
-import { ITreasurySwap } from 'contracts/proxies/Faucet/ITreasurySwap.sol';
-import { TransferHelper } from 'contracts/helpers/TransferHelper.sol';
+import { ITreasurySwap } from "contracts/proxies/Faucet/ITreasurySwap.sol";
+import { TransferHelper } from "contracts/helpers/TransferHelper.sol";
+
+struct MintArguments {
+    address to;
+    uint256 wTONamt;
+}
+
+struct BurnArguments {
+    uint256 amount;
+}
 
 /**
  * @title FaucetProxy
@@ -27,75 +34,98 @@ contract FaucetProxy is AppProxy {
       wTON = _wTON;
     }
 
+    function _mint(
+        MintArguments memory arguments
+    ) internal returns (TokenAmount[] memory) {
+        // grant token approvals
+        TransferHelper.safeApprove(wTON, _appAddress, arguments.wTONamt);
+
+        // proxy call
+        uint256 receivedAmount = ITreasurySwap(_appAddress).mint(arguments.to, arguments.wTONamt);
+
+        // bridge remaining tokens to TON
+        TokenAmount[] memory tokensToBridge = new TokenAmount[](1);
+
+        tokensToBridge[0] = TokenAmount(ITreasurySwap(_appAddress).token(), receivedAmount);
+
+        return tokensToBridge;
+    }
+
     /**
      * @dev A proxy to TreasurySwap.mint(...).
      */
     function mint(
-        address to,
-        uint256 wTONamt
-    ) public {
-        // grant token approvals
-        TransferHelper.safeApprove(wTON, _appAddress, wTONamt);
-        // proxy call
-        ITreasurySwap(_appAddress).mint(to, wTONamt);
+        bytes calldata tacHeader,
+        bytes calldata arguments
+    ) external payable onlyCrossChainLayer {
 
-        //calculate CCL amount to send back to TON Network
-        uint256 tokenValue = ITreasurySwap(_appAddress).tokenValue();
-        uint256 amount = (wTONamt * tokenValue) / (10 ** 9);
+        MintArguments memory args = abi.decode(arguments, (MintArguments));
+        TokenAmount[] memory tokensToBridge = _mint(args);
 
-        // tokens to L2->L1 transfer (lock)
-        address tokenAddressReceived = ITreasurySwap(_appAddress).token();
-        // grant token approvals
-        TransferHelper.safeApprove(tokenAddressReceived, getCrossChainLayerAddress(), amount);
-        TokenAmount[] memory tokensToLock = new TokenAmount[](1);
-        tokensToLock[0] = TokenAmount(tokenAddressReceived, amount);
+        uint i;
+        for (; i < tokensToBridge.length;) {
+            TransferHelper.safeApprove(tokensToBridge[i].l2Address, getCrossChainLayerAddress(), tokensToBridge[i].amount);
+            unchecked {
+                i++;
+            }
+        }
 
-        // CCL L2->L1 callback
+        // CCL TAC->TON callback
+        TacHeaderV1 memory header = _decodeTacHeader(tacHeader);
         OutMessage memory message = OutMessage({
-            queryId: 0,
-            timestamp: block.timestamp,
-            target: "",
-            methodName: "",
-            arguments: new bytes(0),
-            caller: address(this),
-            burn: new TokenAmount[](0),
-            lock: tokensToLock
+            queryId: header.queryId,
+            tvmTarget: header.tvmCaller,
+            tvmPayload: "",
+            toBridge: tokensToBridge
         });
+
         sendMessage(message, 0);
+    }
+
+    function _burn(
+        BurnArguments memory arguments
+    ) internal returns (TokenAmount[] memory) {
+        // grant token approvals
+        TransferHelper.safeApprove(ITreasurySwap(_appAddress).token(), _appAddress, arguments.amount);
+
+        // proxy call
+        uint256 receivedAmount = ITreasurySwap(_appAddress).burn(arguments.amount);
+
+        // bridge remaining tokens to TON
+        TokenAmount[] memory tokensToBridge = new TokenAmount[](1);
+        tokensToBridge[0] = TokenAmount(wTON, receivedAmount);
+
+        return tokensToBridge;
     }
 
     /**
      * @dev A proxy to TreasurySwap.burn(...).
      */
     function burn(
-        uint256 amount
-    ) public {
-        // grant token approvals
-        TransferHelper.safeApprove(ITreasurySwap(_appAddress).token(), _appAddress, amount);
+        bytes calldata tacHeader,
+        bytes calldata arguments
+    ) external payable onlyCrossChainLayer {
 
-        // proxy call
-        ITreasurySwap(_appAddress).burn(amount);
+        BurnArguments memory args = abi.decode(arguments, (BurnArguments));
+        TokenAmount[] memory tokensToBridge = _burn(args);
 
-        //prepare tx back to TON
-        uint256 tokenValue = ITreasurySwap(_appAddress).tokenValue();
-        uint256 refundAmount = amount * 10 ** 9 / tokenValue;
+        uint i;
+        for (; i < tokensToBridge.length;) {
+            TransferHelper.safeApprove(tokensToBridge[i].l2Address, getCrossChainLayerAddress(), tokensToBridge[i].amount);
+            unchecked {
+                i++;
+            }
+        }
 
-        TransferHelper.safeApprove(wTON, getCrossChainLayerAddress(), refundAmount);
-
-        TokenAmount[] memory tokensToBurn = new TokenAmount[](1);
-        tokensToBurn[0] = TokenAmount(wTON, refundAmount);
-
-        //execute the tx back to TON
+        // CCL TAC->TON callback
+        TacHeaderV1 memory header = _decodeTacHeader(tacHeader);
         OutMessage memory message = OutMessage({
-                    queryId: 0,
-                    timestamp: block.timestamp,
-                    target: "",
-                    methodName: "",
-                    arguments: new bytes(0),
-                    caller: address(this),
-                    burn: tokensToBurn,
-                    lock: new TokenAmount[](0)
-                });
-        sendMessage(message, 0);
+            queryId: header.queryId,
+            tvmTarget: header.tvmCaller,
+            tvmPayload: "",
+            toBridge: tokensToBridge
+        });
+
+        sendMessage(message, 0);    
     }
 }
