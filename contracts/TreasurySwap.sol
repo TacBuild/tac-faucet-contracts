@@ -17,7 +17,14 @@ contract TreasurySwap is Ownable {
     uint256 public lowerBound;
     uint8 _decimals;
 
-    constructor(address _token, address _wTON, uint256 _tokenValue, uint8 _setDecimals, uint256 _upperBound, uint256 _lowerBound) {
+    constructor(
+        address _token,
+        address _wTON,
+        uint256 _tokenValue,
+        uint8 _setDecimals,
+        uint256 _upperBound,
+        uint256 _lowerBound
+    ) Ownable(msg.sender) {
         token = _token;
         wTON = _wTON;
         tokenValue = _tokenValue;
@@ -51,21 +58,21 @@ contract TreasurySwap is Ownable {
         return amount;
     }
 
-    function burn(uint256 amount) public returns (uint256) {
+    function burn(address to, uint256 amount) public returns (uint256) {
         require(amount > 0, "TreasurySwap: You need to sell at least some tokens");
         require(amount < upperBound, "TreasurySwap: You are requesting to sell too much tokens");
 
-        uint256 allowance = IERC20(token).allowance(msg.sender, address(this));
+        uint256 allowance = IERC20(token).allowance(to, address(this));
         require(allowance >= amount, "TreasurySwap: Check the token allowance");
 
-        uint256 availableBalance = addressBalance(msg.sender);
+        uint256 availableBalance = addressBalance(to);
         require(amount <= availableBalance, "TreasurySwap: Requested burn amount greater than current balance");
 
-        IERC20(token).transferFrom(msg.sender, address(this), amount);
+        IERC20(token).transferFrom(to, address(this), amount);
 
         uint256 refundAmount = amount * 10 ** 9 / tokenValue;
 
-        IERC20(wTON).transfer(msg.sender, refundAmount);
+        IERC20(wTON).transfer(to, refundAmount);
 
         return refundAmount;
     }

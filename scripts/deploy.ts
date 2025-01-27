@@ -15,31 +15,31 @@ export function saveContractAddress(addressesFilePath: string, name: string, add
 
 async function deployToken(tokenName: string, tokenSymbol: string, decimals: number) {
     const TestnetERC20 = await ethers.getContractFactory("TestnetERC20");
-    const treasury = await TestnetERC20.deploy(tokenName, tokenSymbol, decimals, {});
-    await treasury.deployed();
+    const token = await TestnetERC20.deploy(tokenName, tokenSymbol, decimals, {});
+    await token.waitForDeployment();
     console.log("Successful deployment");
-    console.log("Contract address: ", treasury.address);
+    console.log("Contract address: ", await token.getAddress());
 
     console.log("Starting verification...");
     await run("verify:verify", {
-        address: treasury.address,
+        address: await token.getAddress(),
         constructorArguments: [tokenName, tokenSymbol, decimals],
     });
     console.log("Verification done.");
 
-    return await treasury.getAddress();
+    return await token.getAddress();
 }
 
 async function deployTreasury(tokenAddress: string, tokenValue: string, decimals: number, upperBound: string, lowerBound: string) {
     const TreasurySwap = await ethers.getContractFactory("TreasurySwap");
     const treasury = await TreasurySwap.deploy(tokenAddress, wTON, tokenValue, decimals, upperBound, lowerBound, {});
-    await treasury.deployed();
+    await treasury.waitForDeployment();
     console.log("Successful deployment");
-    console.log("Contract address: ", treasury.address);
+    console.log("Contract address: ", await treasury.getAddress());
 
     console.log("Starting verification...");
     await run("verify:verify", {
-        address: treasury.address,
+        address: await treasury.getAddress(),
         constructorArguments: [tokenAddress, wTON, tokenValue, decimals, upperBound, lowerBound],
     });
     console.log("Verification done.");
@@ -54,13 +54,13 @@ async function deployProxy(treasuryAddress: string) {
     const proxy = await FaucetProxy.deploy(treasuryAddress, wTON, tacContractsSettings, {});
 
     console.log("Waiting for deployment");
-    await proxy.deployed();
+    await proxy.waitForDeployment();
     console.log("Successful deployment");
-    console.log("Contract address: ", proxy.address);
+    console.log("Contract address: ", await proxy.getAddress());
 
     console.log("Starting verification...");
     await run("verify:verify", {
-        address: proxy.address,
+        address: await proxy.getAddress(),
         constructorArguments: [treasuryAddress, wTON, tacContractsSettings],
     });
     console.log("Verification done.");

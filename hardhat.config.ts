@@ -6,7 +6,7 @@ import "@openzeppelin/hardhat-upgrades";
 import { HardhatUserConfig } from "hardhat/config";
 dotenv.config();
 
-const TAC_TESTNET_URL = process.env.TAC_TESTNET_URL || "turin.rpc.tac.build";
+const TAC_TESTNET_URL = process.env.TAC_TESTNET_URL || "eturin.rpc.tac.build";
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "";
 
 const config: HardhatUserConfig = {

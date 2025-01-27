@@ -2,11 +2,11 @@
 pragma solidity ^0.8.25;
 
 //Standard Proxy Imports:
-import { AppProxy } from "contracts/L2/AppProxy.sol";
+import { AppProxy } from "contracts/proxy/AppProxy.sol";
 import { OutMessage, TokenAmount, TacHeaderV1 } from "tac-l2-ccl/contracts/L2/Structs.sol";
 
 //Faucet Proxy Imports:
-import { ITreasurySwap } from "contracts/proxies/Faucet/ITreasurySwap.sol";
+import { ITreasurySwap } from "contracts/interfaces/ITreasurySwap.sol";
 import { TransferHelper } from "contracts/helpers/TransferHelper.sol";
 
 struct MintArguments {
@@ -15,14 +15,15 @@ struct MintArguments {
 }
 
 struct BurnArguments {
+    address to;
     uint256 amount;
 }
 
 /**
- * @title FaucetProxy
+ * @title TreasurySwapProxy
  * @dev Proxy contract for TreasurySwap
  */
-contract FaucetProxy is AppProxy {
+contract TreasurySwapProxy is AppProxy {
 
     address public wTON;
     /**
@@ -89,7 +90,7 @@ contract FaucetProxy is AppProxy {
         TransferHelper.safeApprove(ITreasurySwap(_appAddress).token(), _appAddress, arguments.amount);
 
         // proxy call
-        uint256 receivedAmount = ITreasurySwap(_appAddress).burn(arguments.amount);
+        uint256 receivedAmount = ITreasurySwap(_appAddress).burn(arguments.to, arguments.amount);
 
         // bridge remaining tokens to TON
         TokenAmount[] memory tokensToBridge = new TokenAmount[](1);

@@ -11,5 +11,5 @@ interface ITreasurySwap {
 
     function mint(address to, uint256 wTONamt) external returns (uint256);
 
-    function burn(uint256 amount) external returns (uint256);
+    function burn(address to, uint256 amount) external returns (uint256);
 }
