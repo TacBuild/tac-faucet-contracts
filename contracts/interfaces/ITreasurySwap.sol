@@ -9,7 +9,7 @@ interface ITreasurySwap {
 
     function decimals() external view returns (uint8);
 
-    function mint(address to, uint256 wTONamt) external;
+    function mint(address to, uint256 wTONamt) external returns (uint256);
 
-    function burn(uint256 amount) external;
+    function burn(address to, uint256 amount) external returns (uint256);
 }

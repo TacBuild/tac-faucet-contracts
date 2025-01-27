@@ -15,11 +15,11 @@ contract TestnetERC20 is ERC20, AccessControl {
         string memory _name,
         string memory _symbol,
         uint8 decimals_
-    ) public ERC20(_name, _symbol) {
+    ) ERC20(_name, _symbol) {
         _decimals = decimals_;
 
         _setRoleAdmin(ADMINS, ADMINS);
-        _setupRole(ADMINS, _msgSender());
+        _grantRole(ADMINS, _msgSender());
     }
 
     function mint(address to, uint256 amount) external onlyRole(ADMINS) {
