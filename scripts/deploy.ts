@@ -83,11 +83,13 @@ async function main() {
         saveContractAddress(addressesFilePath, `${token.tokenSymbol}_Treasury`, treasuryAddress);
 
         const proxyAddress = await deployProxy(treasuryAddress);
-        saveContractAddress(addressesFilePath, `${token.tokenSymbol}__TreasuryProxy`, proxyAddress);
+        saveContractAddress(addressesFilePath, `${token.tokenSymbol}_TreasuryProxy`, proxyAddress);
 
         const tokenContract = (await ethers.getContractAt("TestnetERC20", tokenAddress)) as TestnetERC20;
-        await tokenContract.mint(treasuryAddress, "10000000000000000000000000000")
+        await tokenContract.mint(treasuryAddress, 10n ** (9n + BigInt(token.decimals)));
         console.log("Done with ", token.tokenName);
+
+        break;
     }
 }
 
