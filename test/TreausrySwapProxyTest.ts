@@ -3,18 +3,17 @@ import hre, { ethers } from "hardhat";
 import { deploy, TacLocalTestSdk, JettonInfo, TokenMintInfo, TokenUnlockInfo } from "tac-l2-ccl";
 import { Signer, assertArgumentCount } from "ethers";
 import { expect } from "chai";
-import { FaucetProxy } from "../typechain-types/contracts/proxies/Faucet/FaucetProxy";
-import { TestnetERC20 } from "../typechain-types/contracts/testnetERC20.sol/TestnetERC20";
-import { TreasurySwap } from "../typechain-types/contracts/treasurySwap.sol/TreasurySwap";
-import { token } from "../typechain-types/@openzeppelin/contracts";
+import { TreasurySwapProxy } from "../typechain-types/contracts/proxy/TreasurySwapProxy";
+import { TestnetERC20 } from "../typechain-types/contracts/TestnetERC20";
+import { TreasurySwap } from "../typechain-types/contracts/TreasurySwap.sol/TreasurySwap";
 import { ERC20 } from "../typechain-types/@openzeppelin/contracts/token/ERC20";
 
-describe("Faucet proxy test", () => {
+describe("TreasurySwap proxy test", () => {
 
     let admin: Signer;
     let testSdk: TacLocalTestSdk;
 
-    let proxyContract: FaucetProxy;
+    let proxyContract: TreasurySwapProxy;
     let treasurySwapContract: TreasurySwap;
     let tokenContract: TestnetERC20;
 
@@ -44,7 +43,7 @@ describe("Faucet proxy test", () => {
 
         tokenContract = await deploy<TestnetERC20>(admin, hre.artifacts.readArtifactSync("TestnetERC20"), [tokenName, tokenSymbol, decimals], undefined, false);
         treasurySwapContract = await deploy<TreasurySwap>(admin, hre.artifacts.readArtifactSync("TreasurySwap"), [await tokenContract.getAddress(), wTON, tokenValue, decimals, upperBound, lowerBound ], undefined, false);
-        proxyContract = await deploy<FaucetProxy>(admin, hre.artifacts.readArtifactSync("TreasurySwapProxy"), [await treasurySwapContract.getAddress(), wTON, settingsAddress], undefined, false);
+        proxyContract = await deploy<TreasurySwapProxy>(admin, hre.artifacts.readArtifactSync("TreasurySwapProxy"), [await treasurySwapContract.getAddress(), wTON, settingsAddress], undefined, false);
 
         // deposit token to treasurySwap
         await tokenContract.connect(admin).mint(await treasurySwapContract.getAddress(), treasurySwapBalance);

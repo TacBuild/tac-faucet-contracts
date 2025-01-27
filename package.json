@@ -4,7 +4,8 @@
   "description": "ERC20 tokens that can be publicly minted wrapping some ETH according to a specific rate",
   "scripts": {
     "compile": "npx hardhat compile",
-    "deploy": "npx hardhat run scripts/deploy.ts",
+    "deploy_testnet": "npx hardhat run scripts/deploy.ts --network tac_testnet",
+    "deploy_local": "npx hardhat run scripts/deploy.ts",
     "test": "npx hardhat test"
   },
   "keywords": [],

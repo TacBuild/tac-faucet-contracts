@@ -1,6 +1,8 @@
 import { ethers, run } from "hardhat";
 import * as fs from "fs";
+import * as path from "path";
 import tokens from "../tokens.json";
+import { TestnetERC20 } from "../typechain-types";
 
 const wTON = "0x5a56a653e2e1b29caF9d892a27cCaE7aa6007efd";
 
@@ -48,10 +50,10 @@ async function deployTreasury(tokenAddress: string, tokenValue: string, decimals
 }
 
 async function deployProxy(treasuryAddress: string) {
-    const FaucetProxy = await ethers.getContractFactory("FaucetProxy");
+    const TreasurySwapProxy = await ethers.getContractFactory("TreasurySwapProxy");
     const tacContractsSettings = "0x0928d67A277891832c743F8179bf2035D0025392";
 
-    const proxy = await FaucetProxy.deploy(treasuryAddress, wTON, tacContractsSettings, {});
+    const proxy = await TreasurySwapProxy.deploy(treasuryAddress, wTON, tacContractsSettings, {});
 
     console.log("Waiting for deployment");
     await proxy.waitForDeployment();
@@ -69,7 +71,7 @@ async function deployProxy(treasuryAddress: string) {
 }
 
 async function main() {
-    const addressesFilePath = "../addresses.json";
+    const addressesFilePath = path.resolve(__dirname, "../addresses.json");
 
     for (const token of tokens) {
         console.log("Start deployment for token: ", token.tokenName);
@@ -81,9 +83,13 @@ async function main() {
         saveContractAddress(addressesFilePath, `${token.tokenSymbol}_Treasury`, treasuryAddress);
 
         const proxyAddress = await deployProxy(treasuryAddress);
-        saveContractAddress(addressesFilePath, `${token.tokenSymbol}_Proxy`, proxyAddress);
+        saveContractAddress(addressesFilePath, `${token.tokenSymbol}__TreasuryProxy`, proxyAddress);
 
+        const tokenContract = (await ethers.getContractAt("TestnetERC20", tokenAddress)) as TestnetERC20;
+        await tokenContract.mint(treasuryAddress, "10000000000000000000000000000")
         console.log("Done with ", token.tokenName);
+
+        break;
     }
 }
 
