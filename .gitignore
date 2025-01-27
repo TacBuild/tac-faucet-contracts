@@ -19,4 +19,4 @@ artifacts
 /contracts/dist/
 /contracts/types/
 .env
-./addresses.json
+addresses.json
