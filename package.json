@@ -34,9 +34,11 @@
     "hardhat": "^2.22.5",
     "hardhat-gas-reporter": "^1.0.10",
     "jest": "^29.7.0",
-    "tac-l2-ccl": "0.8.32",
     "ts-node": "^10.9.2",
     "typechain": "^8.3.2",
     "typescript": "^5.6.3"
+  },
+  "devDependencies": {
+    "tac-l2-ccl": "0.8.32"
   }
 }
