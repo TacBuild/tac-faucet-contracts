@@ -88,7 +88,6 @@ async function main() {
         const tokenContract = (await ethers.getContractAt("TestnetERC20", tokenAddress)) as TestnetERC20;
         await tokenContract.mint(treasuryAddress, 10n ** (9n + BigInt(token.decimals)));
         console.log("Done with ", token.tokenName);
-        break;
     }
 }
 
