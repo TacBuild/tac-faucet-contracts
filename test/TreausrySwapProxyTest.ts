@@ -84,8 +84,6 @@ describe("TreasurySwap proxy test", () => {
             name: "TON",
             symbol: "TON",
             decimals: 9n,
-            description: "TON description",
-            image: "https://ton.com/image.png",
         };
 
         // how much jetton to mint

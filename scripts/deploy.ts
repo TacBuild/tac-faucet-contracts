@@ -4,7 +4,7 @@ import * as path from "path";
 import tokens from "../tokens.json";
 import { TestnetERC20 } from "../typechain-types";
 
-const wTON = "0x5a56a653e2e1b29caF9d892a27cCaE7aa6007efd";
+const wTON = "0xbE3C16e14d578a24eF4B124fAf9CD1bb5F1e964B";
 
 export function saveContractAddress(addressesFilePath: string, name: string, address: string) {
     let addressData: { [contractName: string]: string } = {};
@@ -88,6 +88,7 @@ async function main() {
         const tokenContract = (await ethers.getContractAt("TestnetERC20", tokenAddress)) as TestnetERC20;
         await tokenContract.mint(treasuryAddress, 10n ** (9n + BigInt(token.decimals)));
         console.log("Done with ", token.tokenName);
+        break;
     }
 }
 
